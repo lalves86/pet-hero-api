@@ -1,12 +1,12 @@
 import { Router } from 'express';
 import { celebrate, Segments, Joi } from 'celebrate';
-// import ensureAuthenticated from '@modules/users/infra/http/middlewares/ensuseAuthenticated';
+import ensureAuthenticated from '@modules/users/infra/http/middlewares/ensuseAuthenticated';
 import PetsController from '../controllers/PetsController';
 
 const petsRouter = Router();
 const petsController = new PetsController();
 
-// petsRouter.use(ensureAuthenticated);
+petsRouter.use(ensureAuthenticated);
 
 petsRouter.get('/', petsController.index);
 

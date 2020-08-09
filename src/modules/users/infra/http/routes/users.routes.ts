@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import { celebrate, Segments, Joi } from 'celebrate';
+import ensureAuthenticated from '@modules/users/infra/http/middlewares/ensuseAuthenticated';
 import UsersController from '../controllers/UsersController';
 
 const usersRouter = Router();
@@ -12,9 +13,9 @@ usersRouter.get(
       id: Joi.string().uuid().required(),
     },
   }),
+  ensureAuthenticated,
   usersController.show,
 );
-
 usersRouter.post(
   '/',
   celebrate({
