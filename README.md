@@ -53,7 +53,7 @@ Foram criados dois modelos de dados, um para representar os _pets_, e um para os
 
 Para usar a aplicação, clone este repositório em sua máquina local utilizando no terminal o comando:
 
-`git clone https://github.com/lalves86/pet-hero.git`
+`git clone https://github.com/lalves86/pet-hero-api.git`
 
 Com o repositório clonado, vá até a pasta raiz do projeto, e instale as dependências necessárias usando o comando:
 
