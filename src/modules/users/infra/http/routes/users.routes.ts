@@ -5,6 +5,16 @@ import UsersController from '../controllers/UsersController';
 const usersRouter = Router();
 const usersController = new UsersController();
 
+usersRouter.get(
+  '/:id',
+  celebrate({
+    [Segments.PARAMS]: {
+      id: Joi.string().uuid().required(),
+    },
+  }),
+  usersController.show,
+);
+
 usersRouter.post(
   '/',
   celebrate({
