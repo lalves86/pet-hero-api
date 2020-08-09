@@ -1,10 +1,8 @@
-# IHero
+# PetHero
 
-API para gerenciamento e distribuição de heróis para combater ameaças.
+API para que usuários possam cadastrar um pet para adoção.
 
-Desenvolvido em Node.js com typescript, usando o _framework_ _express_, persiste os dados em um banco postgres, e suporta as operações de cadastro listagem, atualização e remoção de heróis no banco.
-
-Para armazenar o histórico de ameaças, foi escolhido um banco de dados não relacional (mongodb), pela flexibilidade e pela performance.
+Desenvolvido em Node.js com typescript, usando o _framework_ _express_, persiste os dados em um banco postgres, e suporta as operações de cadastro listagem, atualização e remoção de pets no banco.
 
 Para fazer modificações, é necessário ser um usuário cadastrado e autenticado.
 
@@ -14,7 +12,7 @@ O projeto segue uma estrutura padrão para cada um dos domínios da aplicação,
 
 A pasta de entrada é a pasta **src**, que contém todo o código desenvolvido para o projeto.
 
-Dentro da pasta **src**, na pasta **modules**, temos os três domínios da aplicação, que são o **users**, o **heroes**, e o **threats**.
+Dentro da pasta **src**, na pasta **modules**, temos os dois domínios da aplicação, que são o **users** e o **pets**.
 
 A pasta **shared** contém arquivos que são necessários em mais de um domínio da aplicação, como a **container**, onde são registrados os repositórios para injeção de dependêncicas, a pasta **errors**, que contém uma classe para tratamento de exceções de maneira personalizada, e a pasta **infra**, que contém as decisões de infra estrutura da aplicação.
 
@@ -22,15 +20,19 @@ A pasta **infra** tem duas divisões, a pasta **http**, que tem por objetivo cen
 
 A pasta **config** contem todas as configurações necessárias para os serviços da aplicação, que podem se repetir em mais de um local, como a configuração do _token_ **JWT**.
 
-Dentro de **modules**, a estrutura padrão se repete em todos domínios da aplicação. Dentro da pasta **heroes**, por exemplo, encontramos a pasta **dtos**, que tem as modelagens dos dados que precisam ser transferidos de uma camada a outra da aplicação, no caso, a criação de um novo _hero_, que precisa receber um _name_ e um _rank_.
+Dentro de **modules**, a estrutura padrão se repete em todos domínios da aplicação. Dentro da pasta **pets**, por exemplo, encontramos a pasta **dtos**, que tem as modelagens dos dados que precisam ser transferidos de uma camada a outra da aplicação, no caso, a criação de um novo _pet_, que precisa receber _name_, _species_, _breed_, _age_, _weight_ e _location_.
 
 ```
-export default interface ICreateHeroDTO {
+export default interface ICreatePetDTO {
   name: string;
-  rank: string;
+  species: string;
+  breed: string;
+  age: number;
+  weight: number,
+  location: string;
 }
 ```
-Em seguida, existe a pasta **infra**, que tem todas as decisões técnicas para viabilizar a comunicação e a persistências dos dados, dentro dela, temos a pasta **http**, que contém uma pasta **routes** e uma pasta **controllers**, para o arquivo de rotas relativas ao domínio _heroes_ e seus respectivos _controllers_ responsáveis por receber as requisições, direcionar os dados para os respectivos _services_, e retornar as respostas que serão exibidas nas rotas.
+Em seguida, existe a pasta **infra**, que tem todas as decisões técnicas para viabilizar a comunicação e a persistências dos dados, dentro dela, temos a pasta **http**, que contém uma pasta **routes** e uma pasta **controllers**, para o arquivo de rotas relativas ao domínio _pets_ e seus respectivos _controllers_ responsáveis por receber as requisições, direcionar os dados para os respectivos _services_, e retornar as respostas que serão exibidas nas rotas.
 
 Dentro da pasta **infra** existe também a pasta **typeorm**, que contém a **entity**, onde está a modelagem dos dados a serem persistidos no banco de dados, e a pasta **repositories**, contendo os métodos relativos às interações com o banco.
 
@@ -45,33 +47,25 @@ Os _services_ são os responsáveis por implementar as regras de negócio da apl
 
 ## Modelagem dos dados
 
-Foram criados dois modelos de dados, um para representar os _heroes_, e um para os _users_. O herói é representado pelo seu nome e pelo seu rank. Quando cadastrado, um id é atribuído automaticamente a ele, assim como os campos de data de criação e data de atualização. Os usuários são persistidos com um nome, um e-mail e um _hash_ da senha escolhida. A senha é encriptada no momento da criação do usuário.
-
-O histórico de ameaças (_threats_) é um schema com dois atributos: o _attack_, que armazena a ameaça, e o _contention_, que armazena os dados do _hero_ que foi alocado para combater a ameaça.
+Foram criados dois modelos de dados, um para representar os _pets_, e um para os _users_. O pet é representado pelo seu nome, sua espécie, raça, idade, peso e localização. Quando cadastrado, um id é atribuído automaticamente a ele, assim como os campos de data de criação e data de atualização. Os usuários são persistidos com um nome, um e-mail, um endereço e um _hash_ da senha escolhida. A senha é encriptada no momento da criação do usuário.
 
 ## Usando a aplicação em modo local
 
 Para usar a aplicação, clone este repositório em sua máquina local utilizando no terminal o comando:
 
-`git clone https://github.com/lalves86/challenges.git`
+`git clone https://github.com/lalves86/pet-hero.git`
 
-Com o repositório clonado, vá até a pasta raiz do projeto, e instale as dependências necessárias:
+Com o repositório clonado, vá até a pasta raiz do projeto, e instale as dependências necessárias usando o comando:
 
 `yarn`
 
-É necessário uma conexão com um banco de dados **postgres** com o nome de **challenge_zrp**, a partir do docker é possível criar um container com o postgres através do comando:
+É necessário uma conexão com um banco de dados **postgres** com o nome de **pethero_db**, a partir do docker é possível criar um container com o postgres através do comando:
 
 ```
-docker run --name challenge_zrp -e POSTGRES_PASSWORD=docker -e POSTGRES_DB=challenge_zrp -p 5432:5432 -d postgres
+docker run --name pethero-posgres-db -e POSTGRES_PASSWORD=docker -e POSTGRES_DB=pethero_db -p 5432:5432 -d postgres
 ```
 
-Para o banco não relacional, um container com a imagem do **mongodb** pode ser criada a partir do comando:
-
-```
-docker run --name mongo-challenge-zrp -p 27017:27017 -d -t mongo
-```
-
-Com os dois containers em execução, executar as migrations através do comando:
+Com o container em execução, executar as migrations através do comando:
 
 `yarn typeorm migration:run`
 
@@ -91,78 +85,57 @@ Com o servidor rodando, é possível interagir com o banco através das rotas di
 
 De acordo com os domínios da aplicação, foram criados dois conjuntos de rotas:
 
-- `/heroes`: para as operações na entidade _heroes_
-  - `GET /`: Lista todos os heróis cadastrados no banco
-  - `GET /id`: Lista um herói específico, a partir do id
-  - `POST /`: Cadastra um novo herói no banco passando seu nome e rank
+- `/pets`: para as operações na entidade _heroes_
+  - `GET /`: Lista todos os pets cadastrados no banco
+  - `GET /id`: Lista um pet específico, a partir do id
+  - `POST /`: Cadastra um novo pet no banco passando as informações requeridas
     - **request.body**
     ```
     {
-	    "name": "Batman",
-	    "rank": "C"
+	    "userId": "852cd287-4d04-45ae-a1d0-cd208edc5d57",
+	    "name": "Baloo",
+      "species": "Cachorro",
+      "breed": "Sem raça",
+      "age": 4,
+      "weight": 6,
+      "location": "São Paulo"
     }
     ```
-  - `PUT /id`: Permite alterar as informações do herói, a partir do id
+  - `PUT /id`: Permite alterar as informações do pet, a partir do id
     - **request.body**
     ```
     {
-	    "name": "Batman",
-	    "rank": "A"
+	    "userId": "852cd287-4d04-45ae-a1d0-cd208edc5d57",
+	    "name": "Baloo",
+      "species": "Cachorro",
+      "breed": "Sem raça",
+      "age": 4,
+      "weight": 6,
+      "location": "São Paulo"
     }
     ```
-  - `DELETE /id`: Permite remover um herói, a partir do seu id
+  - `DELETE /id`: Permite remover um pet, a partir do seu id
 
 - `/users`: para as operações na entidade _users_
+  - `GET /id`: Lista um usuário específico, a partir do id
   - `POST /`: Cadastra um novo usuário no banco
     - **request.body**
     ```
     {
 	    "name": "John Doe",
 	    "email": "johndoe@example.com",
+      "address": "Example address",
       "password": "123456"
     }
     ```
 
 - `/sessions`: para autenticar um usuário cadastrado
-  - `POST /`: Cadastra um novo usuário no banco
+  - `POST /`: Autentica um usuário
     - **request.body**
     ```
     {
 	    "email": "johndoe@example.com",
       "password": "123456"
-    }
-    ```
-
-- `/threats`: para autenticar um usuário cadastrado
-  - `GET /`: Lista o histórico de ameaças já combatidas
-  - `POST /`: Armazena uma nova ameaça no banco
-    - **request.body**
-    ```
-    {
-      "attack": {
-        "location": {
-          "lat": -10.836597,
-          "lng": -45.236007
-        },
-        "dangerLevel": "A",
-        "monsterName": "Carnage"
-      },
-      "contention": [
-        {
-          "id": "b639f617-06df-4e36-89b3-b5ca1b3cb09b",
-          "name": "Hulk",
-          "rank": "B",
-          "createdAt": "2020-07-01T15:14:28.486Z",
-          "updatedAt": "2020-07-01T15:17:33.950Z"
-        },
-        {
-          "id": "4cd082a8-9eb1-419e-9709-26424c1aa540",
-          "name": "Spider Man",
-          "rank": "B",
-          "createdAt": "2020-07-02T20:50:51.462Z",
-          "updatedAt": "2020-07-02T20:51:33.006Z"
-        }
-      ]
     }
     ```
 
